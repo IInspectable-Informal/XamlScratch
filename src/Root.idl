@@ -1,0 +1,8 @@
+namespace XamlScratch
+{
+    [default_interface]
+    runtimeclass Root : Windows.UI.Xaml.Controls.Grid
+    {
+        static Root Init(Windows.UI.Xaml.Controls.Frame frame);
+    }
+}

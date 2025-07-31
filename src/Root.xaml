@@ -1,0 +1,79 @@
+﻿<Grid
+    x:Class="XamlScratch.Root"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:XamlScratch"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    ActualThemeChanged="ChangeTitleBarTheme">
+
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Image Source="ms-appx:///Assets/Square44x44Logo.png" Height="24" Margin="4"/>
+        <TextBlock x:Name="title" VerticalAlignment="Center" Grid.Column="1"/>
+    </Grid>
+    <muxc:NavigationView x:Name="scratchPad" SelectionChanged="NavedTo" IsBackButtonVisible="Collapsed" IsSettingsVisible="False" PaneDisplayMode="Top" Grid.Row="1">
+        <muxc:NavigationView.MenuItems>
+            <muxc:NavigationViewItem x:Name="editorNavItem" Content="Editor">
+                <muxc:NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE70F;"/>
+                </muxc:NavigationViewItem.Icon>
+            </muxc:NavigationViewItem>
+            <muxc:NavigationViewItem x:Name="prevNavItem" Content="Preview">
+                <muxc:NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE890;"/>
+                </muxc:NavigationViewItem.Icon>
+            </muxc:NavigationViewItem>
+        </muxc:NavigationView.MenuItems>
+        <muxc:NavigationView.PaneFooter>
+            <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,0,4,0">
+                <Button Padding="0">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="{StaticResource ButtonPadding}">
+                            <FontIcon Glyph="&#xE898;"/>
+                            <TextBlock Text="Load"/>
+                        </StackPanel>
+                        <muxc:InfoBadge x:Name="badgeAttention" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                    </Grid>
+                </Button>
+                <ComboBox x:Name="themeSwitcher" SelectionChanged="ThemeChanged" VerticalAlignment="Center">
+                    <x:String>Light</x:String>
+                    <x:String>Dark</x:String>
+                    <x:String>Default</x:String>
+                </ComboBox>
+                <Button Padding="5">
+                    <Button.Flyout>
+                        <Flyout Placement="Bottom">
+                            <StackPanel Spacing="8">
+                                <ComboBox x:Name="fontList" Header="Font"/>
+                                <muxc:NumberBox x:Name="fontSizes" Header="Font Size" Value="14" Minimum="12" Maximum="80" SpinButtonPlacementMode="Inline"/>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                    <muxc:AnimatedIcon Width="20">
+                        <muxc:AnimatedIcon.Source>
+                            <AnimatedSettingsVisualSource xmlns="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"/>
+                        </muxc:AnimatedIcon.Source>
+                    </muxc:AnimatedIcon>
+                </Button>
+            </StackPanel>
+        </muxc:NavigationView.PaneFooter>
+        <Grid Margin="8">
+            <TextBox x:Name="XamlEditor" AcceptsReturn="True" VerticalAlignment="Stretch"
+                     ScrollViewer.VerticalScrollMode="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                     ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+            <ContentPresenter x:Name="XamlPreview" Visibility="Collapsed"/>
+        </Grid>
+    </muxc:NavigationView>
+
+</Grid>
