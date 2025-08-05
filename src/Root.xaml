@@ -53,7 +53,7 @@
                 </ComboBox>
                 <Button Padding="5">
                     <Button.Flyout>
-                        <Flyout Placement="Bottom">
+                        <Flyout Placement="Bottom" Closing="HandleFlyoutClose">
                             <StackPanel Spacing="8">
                                 <ComboBox x:Name="fontList" Header="Font" SelectionChanged="SetFontRequested"/>
                                 <muxc:NumberBox x:Name="fontSizes" Header="Font Size" Minimum="3" Maximum="130" ValueChanged="ChangeFontSizeRequested" SpinButtonPlacementMode="Inline"/>

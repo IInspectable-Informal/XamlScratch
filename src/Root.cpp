@@ -11,6 +11,7 @@ using ns Windows::UI;
 using ns Windows::UI::Input;
 using ns Windows::UI::Xaml;
 using ns Windows::UI::Xaml::Controls;
+using ns Windows::UI::Xaml::Controls::Primitives;
 using ns Windows::UI::Xaml::Input;
 using ns Windows::UI::Xaml::Markup;
 using ns Windows::UI::Xaml::Media;
@@ -125,6 +126,15 @@ namespace winrt::XamlScratch::implementation
             ShowError(ex);
         }
     }
+
+    void Root::HandleFlyoutClose(FlyoutBase const&, FlyoutBaseClosingEventArgs const& e)
+    { if (_ListOpened) { e.Cancel(true); } }
+
+    void Root::ListOpened(IInspectable const&, IInspectable const&)
+    { _ListOpened = true; }
+
+    void Root::ListClosed(IInspectable const&, IInspectable const&)
+    { _ListOpened = false; }
 
     //Private Methods
     Windows::Foundation::IAsyncAction Root::LoadXaml()

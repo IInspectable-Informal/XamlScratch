@@ -16,6 +16,9 @@ namespace winrt::XamlScratch::implementation
         void ModeChanged(IInspectable const&, Windows::UI::Xaml::RoutedEventArgs const&);
         void WheelChanged(IInspectable const&, Windows::UI::Xaml::Input::PointerRoutedEventArgs const&);
         fire_and_forget NavedTo(Microsoft::UI::Xaml::Controls::NavigationView const&, Microsoft::UI::Xaml::Controls::NavigationViewSelectionChangedEventArgs const&);
+        void HandleFlyoutClose(Windows::UI::Xaml::Controls::Primitives::FlyoutBase const&, Windows::UI::Xaml::Controls::Primitives::FlyoutBaseClosingEventArgs const&);
+        void ListOpened(IInspectable const&, IInspectable const&);
+        void ListClosed(IInspectable const&, IInspectable const&);
 
         //Destructor
         ~Root();
@@ -27,7 +30,7 @@ namespace winrt::XamlScratch::implementation
         Windows::UI::Xaml::Controls::Frame rootFrame{ nullptr };
         Windows::UI::Xaml::Controls::ContentDialog dialog;
         Windows::UI::ViewManagement::ApplicationViewTitleBar TitleBar = Windows::UI::ViewManagement::ApplicationView::GetForCurrentView().TitleBar();
-        event_token token;
+        event_token token; bool _ListOpened = false;
 
         Windows::Foundation::IAsyncAction LoadXaml();
         fire_and_forget ShowError(hresult_error const&);

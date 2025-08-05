@@ -10,7 +10,7 @@
     <ProjectGuid>{414eb1c8-297e-4271-b252-397106c91d42}</ProjectGuid>
     <ProjectName>XamlScratch</ProjectName>
     <RootNamespace>XamlScratch</RootNamespace>
-    <DefaultLanguage>zh-cn</DefaultLanguage>
+    <DefaultLanguage>en-us</DefaultLanguage>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
