@@ -37,13 +37,13 @@
         </muxc:NavigationView.MenuItems>
         <muxc:NavigationView.PaneFooter>
             <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,0,4,0">
-                <Button Padding="0">
+                <Button x:Name="LoadButton" Padding="0" Click="LoadXamlRequested">
                     <Grid>
                         <StackPanel Orientation="Horizontal" Spacing="8" Margin="{StaticResource ButtonPadding}">
                             <FontIcon Glyph="&#xE898;"/>
                             <TextBlock Text="Load"/>
                         </StackPanel>
-                        <muxc:InfoBadge x:Name="badgeAttention" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                        <muxc:InfoBadge x:Name="BadgeAttention" Width="8" Height="8" HorizontalAlignment="Right" VerticalAlignment="Top"/>
                     </Grid>
                 </Button>
                 <ComboBox x:Name="themeSwitcher" SelectionChanged="ThemeChanged" VerticalAlignment="Center">
@@ -55,8 +55,9 @@
                     <Button.Flyout>
                         <Flyout Placement="Bottom">
                             <StackPanel Spacing="8">
-                                <ComboBox x:Name="fontList" Header="Font"/>
-                                <muxc:NumberBox x:Name="fontSizes" Header="Font Size" Value="14" Minimum="12" Maximum="80" SpinButtonPlacementMode="Inline"/>
+                                <ComboBox x:Name="fontList" Header="Font" SelectionChanged="SetFontRequested"/>
+                                <muxc:NumberBox x:Name="fontSizes" Header="Font Size" Minimum="3" Maximum="130" ValueChanged="ChangeFontSizeRequested" SpinButtonPlacementMode="Inline"/>
+                                <ToggleSwitch x:Name="AutoLoadSwitch" Header="Auto Load Mode" OnContent="Load When Preview" OffContent="Load When Click &quot;Load&quot;" Toggled="ModeChanged"/>
                             </StackPanel>
                         </Flyout>
                     </Button.Flyout>
@@ -69,7 +70,7 @@
             </StackPanel>
         </muxc:NavigationView.PaneFooter>
         <Grid Margin="8">
-            <TextBox x:Name="XamlEditor" AcceptsReturn="True" VerticalAlignment="Stretch"
+            <TextBox x:Name="XamlEditor" AcceptsReturn="True" PointerWheelChanged="WheelChanged" VerticalAlignment="Stretch"
                      ScrollViewer.VerticalScrollMode="Auto" ScrollViewer.VerticalScrollBarVisibility="Auto"
                      ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
             <ContentPresenter x:Name="XamlPreview" Visibility="Collapsed"/>

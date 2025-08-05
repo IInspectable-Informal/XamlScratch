@@ -42,7 +42,7 @@ namespace winrt::XamlScratch::implementation
     /// will be used such as when the application is launched to open a specific file.
     /// </summary>
     /// <param name="e">Details about the launch request and process.</param>
-    void App::OnLaunched(LaunchActivatedEventArgs const& e)
+    void App::OnLaunched([[maybe_unused]] LaunchActivatedEventArgs const& e)
     {
         CoreApplication::GetCurrentView().TitleBar().ExtendViewIntoTitleBar(true);
         ApplicationView const& AppView = ApplicationView::GetForCurrentView();

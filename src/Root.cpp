@@ -2,20 +2,24 @@
 #include "Root.h"
 #include "Root.g.cpp"
 #include "Constants.h"
-#include <dwrite.h>
-#include <winrt/Windows.UI.Popups.h>
 
 using ns winrt;
 using ns Windows::ApplicationModel;
 using ns Windows::Storage;
+using ns Windows::System;
 using ns Windows::UI;
+using ns Windows::UI::Input;
 using ns Windows::UI::Xaml;
 using ns Windows::UI::Xaml::Controls;
+using ns Windows::UI::Xaml::Input;
 using ns Windows::UI::Xaml::Markup;
+using ns Windows::UI::Xaml::Media;
 ns muxc = Microsoft::UI::Xaml::Controls;
 
 namespace winrt::XamlScratch::implementation
 {
+    const event_token defaultToken = event_token();
+
     hstring ToHex(long const& hresult)
     {
         wchar_t buffer[11];
@@ -43,20 +47,79 @@ namespace winrt::XamlScratch::implementation
         } else { themeSwitcher().SelectedIndex((unbox_value<int>(AppDC.Values().Lookup(L"AppTheme")) + 2) % 3); }
     }
 
+    fire_and_forget Root::LoadXamlRequested(IInspectable const&, RoutedEventArgs const&)
+    {
+        LoadButton().IsEnabled(false);
+        try
+        {
+            scratchPad().SelectedItem(prevNavItem());
+            co_await LoadXaml();
+        }
+        catch (hresult_error const& ex)
+        {
+            scratchPad().SelectedItem(editorNavItem());
+            ShowError(ex);
+        } LoadButton().IsEnabled(true);
+    }
+
+    void Root::SetFontRequested(IInspectable const&, SelectionChangedEventArgs const&)
+    {
+        auto i0 = fontList().SelectedIndex();
+        if (i0 > -1)
+        {
+            auto str = fontList().Items().GetAt(i0);
+            XamlEditor().FontFamily(FontFamily(unbox_value<hstring>(str)));
+            AppDC.Values().Insert(L"FontName", str);
+        }
+        else
+        {
+            uint32_t i = 0;
+            fontList().Items().IndexOf(AppDC.Values().Lookup(L"FontName"), i);
+            fontList().SelectedIndex(i);
+        }
+    }
+
+    void Root::ChangeFontSizeRequested(muxc::NumberBox const&, muxc::NumberBoxValueChangedEventArgs const&)
+    {
+        double size = fontSizes().Value();
+        if (!std::isnan(size))
+        {
+            XamlEditor().FontSize(size);
+            AppDC.Values().Insert(L"FontSize", box_value(size));
+        } else { fontSizes().Value(unbox_value<double>(AppDC.Values().Lookup(L"FontSize"))); }
+    }
+
+    void Root::ModeChanged(IInspectable const&, RoutedEventArgs const&)
+    {
+        bool isAutoLoadEnabled = AutoLoadSwitch().IsOn();
+        LoadButton().Visibility(static_cast<::Visibility>(isAutoLoadEnabled));
+        AppDC.Values().Insert(L"IsAutoLoadEnabled", box_value(isAutoLoadEnabled));
+    }
+
+    void Root::WheelChanged(IInspectable const& sender, PointerRoutedEventArgs const& e)
+    {
+        if (e.KeyModifiers() == VirtualKeyModifiers::Control)
+        {
+            int delta = e.GetCurrentPoint(sender.as<UIElement>()).Properties().MouseWheelDelta();
+            e.Handled(delta);
+            if (delta > 0)
+            { TryIncreaseFontSize(1); }
+            else if (delta < 0)
+            { TryIncreaseFontSize(-1); }
+        }
+    }
+
     fire_and_forget Root::NavedTo(muxc::NavigationView const&, muxc::NavigationViewSelectionChangedEventArgs const&)
     {
         try
         {
             bool isEditorView = unbox_value<muxc::NavigationViewItem>(scratchPad().SelectedItem()) == editorNavItem();
-            if (!isEditorView)
-            {
-                co_await FileIO::WriteTextAsync(XamlFile, XamlEditor().Text());
-                XamlPreview().Content(XamlReader::Load(L"<ContentPresenter xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\">" + XamlEditor().Text() + L"</ContentPresenter>"));
-            }
+            if (AutoLoadSwitch().IsOn() && !isEditorView)
+            { co_await LoadXaml(); }
             XamlEditor().Visibility(isEditorView ? Visibility::Visible : Visibility::Collapsed);
             XamlPreview().Visibility(isEditorView ? Visibility::Collapsed : Visibility::Visible);
         }
-        catch ([[maybe_unused]] hresult_error const& ex)
+        catch (hresult_error const& ex)
         {
             scratchPad().SelectedItem(editorNavItem());
             ShowError(ex);
@@ -64,12 +127,43 @@ namespace winrt::XamlScratch::implementation
     }
 
     //Private Methods
+    Windows::Foundation::IAsyncAction Root::LoadXaml()
+    {
+        BadgeAttention().Visibility(Visibility::Collapsed);
+        if (token == defaultToken)
+        { token = XamlEditor().TextChanged({ this, &Root::XamlTextChanged }); }
+        co_await FileIO::WriteTextAsync(XamlFile, XamlEditor().Text());
+        XamlPreview().Content(XamlReader::Load(L"<ContentPresenter xmlns=\"http://schemas.microsoft.com/winfx/2006/xaml/presentation\" xmlns:x=\"http://schemas.microsoft.com/winfx/2006/xaml\">" + XamlEditor().Text() + L"</ContentPresenter>"));
+    }
+
     fire_and_forget Root::ShowError(hresult_error const& ex)
     {
         dialog.Title(box_value(L"Error"));
         dialog.Content(box_value(ex.message() + L"\nHRESULT: " + ToHex(ex.code())));
         dialog.CloseButtonText(L"Close");
         co_await dialog.ShowAsync();
+    }
+
+    void Root::TryIncreaseFontSize(int const& increment)
+    {
+        double newValue = fontSizes().Value() + increment;
+        byte result = 0x0A * (newValue >= fontSizes().Minimum()) + (newValue <= fontSizes().Maximum());
+        switch (result)
+        {
+            case 0x0B: //dec: 11, In Range
+            { fontSizes().Value(newValue); break; }
+            case 0x0A: //dec: 10, newValue > fontSizes().Maximum()
+            { fontSizes().Value(fontSizes().Maximum()); break; }
+            case 0x01: //dec: 01, newValue < fontSizes().Minimum()
+            { fontSizes().Value(fontSizes().Minimum()); break; }
+        }
+    }
+
+    void Root::XamlTextChanged(IInspectable const&, TextChangedEventArgs const&)
+    {
+        XamlEditor().TextChanged(token);
+        token = event_token();
+        BadgeAttention().Visibility(Visibility::Visible);
     }
 
     //Constructor
@@ -80,14 +174,16 @@ namespace winrt::XamlScratch::implementation
         themeSwitcher().SelectedIndex((unbox_value<int>(AppDC.Values().Lookup(L"AppTheme")) + 2) % 3);
         scratchPad().SelectedItem(editorNavItem());
         XamlEditor().Text(FileIO::ReadTextAsync(XamlFile).get());
+        token = XamlEditor().TextChanged({ this, &Root::XamlTextChanged });
         dialog.Style(Application::Current().Resources().Lookup(box_value(L"DefaultContentDialogStyle")).as<::Style>());
+        AutoLoadSwitch().IsOn(AppDC.Values().HasKey(L"IsAutoLoadEnabled") ? unbox_value<bool>(AppDC.Values().Lookup(L"IsAutoLoadEnabled")) : true);
 
         com_ptr<IDWriteFactory> pDWFactory;
         check_hresult(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), (IUnknown**)pDWFactory.put_void()));
         com_ptr<IDWriteFontCollection> pFontCollection;
         check_hresult(pDWFactory->GetSystemFontCollection(pFontCollection.put()));
         UINT32 fontCount = pFontCollection->GetFontFamilyCount();
-        std::vector<hstring> fontFamilies;
+        std::vector<IInspectable> fontFamilies;
         for (UINT32 i = 0; i < fontCount; ++i)
         {
             com_ptr<IDWriteFontFamily> pFontFamily;
@@ -103,16 +199,20 @@ namespace winrt::XamlScratch::implementation
                 check_hresult(pFamilyNames->GetStringLength(index, &length));
                 std::wstring name(length + 1, L'\0');
                 check_hresult(pFamilyNames->GetString(index, name.data(), length + 1));
-                fontFamilies.emplace_back(name.c_str());
+                fontFamilies.emplace_back(box_value(name.c_str()));
             }
-        } uint32_t ic = fontFamilies.size(); auto items = fontList().Items(); auto defaultFont = fontList().FontFamily().Source();
-        for (uint32_t i = 0; i < ic; ++i)
-        {
-            items.Append(box_value(fontFamilies[i]));
-            if (defaultFont == fontFamilies[i])
-            { fontList().SelectedIndex(i); }
-        }
-        Windows::UI::Popups::MessageDialog(defaultFont).ShowAsync();
+        } uint32_t i = 0; auto items = fontList().Items();
+        items.ReplaceAll(fontFamilies);
+        IInspectable str = AppDC.Values().HasKey(L"FontName") ? AppDC.Values().Lookup(L"FontName") : box_value(fontList().FontFamily().Source());
+        items.IndexOf(str, i); fontList().SelectedIndex(i);
+        fontSizes().Value(AppDC.Values().HasKey(L"FontSize") ? unbox_value<double>(AppDC.Values().Lookup(L"FontSize")) : 14);
+    }
+
+    //Destructor
+    Root::~Root()
+    {
+        if (!(token == defaultToken))
+        { XamlEditor().TextChanged(token); }
     }
 
     //Static Methods
