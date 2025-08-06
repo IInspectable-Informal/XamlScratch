@@ -127,6 +127,12 @@ namespace winrt::XamlScratch::implementation
         }
     }
 
+    //Fix a strange bug on the ComboBox control inside the FlyoutPresenter control.
+    //You can remove the code inside the function implementations to reproduce the bug.
+    //⚠️If you removed these code, after you operated any control inside the FlyoutPresenter control,
+    //which supports the text input function,
+    //the Flyout will closed when you open the ComboBox selection list.
+    //Patch code start
     void Root::HandleFlyoutClose(FlyoutBase const&, FlyoutBaseClosingEventArgs const& e)
     { if (_ListOpened) { e.Cancel(true); } }
 
@@ -135,6 +141,7 @@ namespace winrt::XamlScratch::implementation
 
     void Root::ListClosed(IInspectable const&, IInspectable const&)
     { _ListOpened = false; }
+    //Patch code end
 
     //Private Methods
     Windows::Foundation::IAsyncAction Root::LoadXaml()

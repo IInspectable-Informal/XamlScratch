@@ -16,6 +16,9 @@ namespace winrt::XamlScratch::implementation
         void ModeChanged(IInspectable const&, Windows::UI::Xaml::RoutedEventArgs const&);
         void WheelChanged(IInspectable const&, Windows::UI::Xaml::Input::PointerRoutedEventArgs const&);
         fire_and_forget NavedTo(Microsoft::UI::Xaml::Controls::NavigationView const&, Microsoft::UI::Xaml::Controls::NavigationViewSelectionChangedEventArgs const&);
+
+        //Fix a strange bug on the ComboBox control inside the FlyoutPresenter control.
+        //Don't remove/modify these function definitions!!!
         void HandleFlyoutClose(Windows::UI::Xaml::Controls::Primitives::FlyoutBase const&, Windows::UI::Xaml::Controls::Primitives::FlyoutBaseClosingEventArgs const&);
         void ListOpened(IInspectable const&, IInspectable const&);
         void ListClosed(IInspectable const&, IInspectable const&);

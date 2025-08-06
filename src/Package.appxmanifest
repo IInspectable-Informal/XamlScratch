@@ -10,7 +10,7 @@
   <Identity
     Name="IInspectable.XamlScratch"
     Publisher="CN=IInspectable"
-    Version="1.0.0.0" />
+    Version="1.0.1.0" />
   <mp:PhoneIdentity PhoneProductId="78a13fd4-a2f9-4138-83c4-22cc3896175c" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
   <Properties>
     <DisplayName>XAML Scratch</DisplayName>

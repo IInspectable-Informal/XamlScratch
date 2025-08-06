@@ -55,7 +55,7 @@
                     <Button.Flyout>
                         <Flyout Placement="Bottom" Closing="HandleFlyoutClose">
                             <StackPanel Spacing="8">
-                                <ComboBox x:Name="fontList" Header="Font" SelectionChanged="SetFontRequested"/>
+                                <ComboBox x:Name="fontList" Header="Font" SelectionChanged="SetFontRequested" DropDownOpened="ListOpened" DropDownClosed="ListClosed"/>
                                 <muxc:NumberBox x:Name="fontSizes" Header="Font Size" Minimum="3" Maximum="130" ValueChanged="ChangeFontSizeRequested" SpinButtonPlacementMode="Inline"/>
                                 <ToggleSwitch x:Name="AutoLoadSwitch" Header="Auto Load Mode" OnContent="Load When Preview" OffContent="Load When Click &quot;Load&quot;" Toggled="ModeChanged"/>
                             </StackPanel>
